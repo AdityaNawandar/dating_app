@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tindercard/flutter_tindercard.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import 'constants.dart';
 import 'data.dart';
@@ -18,24 +19,34 @@ class _TinderCardsState extends State<TinderCards>
     with TickerProviderStateMixin {
   List lstUsers = [];
   int lstUsersLength = 0;
+  int _selectedIndex = 0;
+  List lstUserImages = [];
+  CardController cardController = CardController();
+  var _pageController = PageController();
+  int _activeImageIndex = 0;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _pageController = PageController();
+    _pageController.addListener(() {
+      setState(() {
+        _activeImageIndex = _pageController.page!.toInt();
+      });
+    });
     setState(() {
       lstUsers = users;
       lstUsersLength = users.length;
     });
   }
 
-  void updateStack(int index) {
+  //METHOD TO SET STATE - BottomNavBar
+  void _onItemTapped(int index) {
     setState(() {
-      lstUsersLength = lstUsersLength - 1;
-      lstUsers.removeAt(index);
+      _selectedIndex = index;
     });
   }
 
-  CardController cardController = new CardController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,10 +60,14 @@ class _TinderCardsState extends State<TinderCards>
   BottomNavigationBar getBottomNavigationBar() {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
+      onTap: _onItemTapped,
       backgroundColor: kBottomNavBarBackgroundColor,
-      selectedItemColor: Colors.black,
-      currentIndex: 0,
-      selectedLabelStyle: const TextStyle(fontSize: 18, color: Colors.black),
+      selectedItemColor: kBottomNavBarSelectedItemColor,
+      unselectedItemColor: kBottomNavBarUnselectedItemColor,
+      currentIndex: _selectedIndex,
+      selectedLabelStyle: const TextStyle(
+        fontSize: 18,
+      ),
       iconSize: 32.0,
       items: const [
         BottomNavigationBarItem(
@@ -92,9 +107,8 @@ class _TinderCardsState extends State<TinderCards>
   }
 
   SizedBox getBody() {
-    CardController controller; //Use this to trigger swap.
-    double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+
     return SizedBox(
       height: screenHeight,
       child: Padding(
@@ -107,9 +121,10 @@ class _TinderCardsState extends State<TinderCards>
                 child: TinderSwapCard(
                   animDuration: 200,
                   swipeEdge: 8,
-                  swipeEdgeVertical: 6,
+                  //swipeEdgeVertical: 2,
                   orientation: AmassOrientation.TOP,
-                  swipeUp: true,
+                  swipeUp: false,
+                  swipeDown: false,
                   totalNum: lstUsersLength,
                   maxWidth: MediaQuery.of(context).size.width,
                   maxHeight: MediaQuery.of(context).size.height * 0.81,
@@ -127,177 +142,7 @@ class _TinderCardsState extends State<TinderCards>
                       ],
                     ),
                     //COMPLETE CARD
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(25),
-                      child: Stack(
-                        children: [
-                          //IMAGE (and Name Overlay)
-                          Container(
-                            width: screenWidth,
-                            height: screenHeight,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image:
-                                      AssetImage(lstUsers[index]["imageUrl"]),
-                                  fit: BoxFit.cover),
-                            ),
-                            //NAME OVERLAY
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                //NAME AND AGE
-                                Container(
-                                  //alignment: Alignment.center,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.6),
-                                    //borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            lstUsers[index]["name"] + ", ",
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 24,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          Text(
-                                            lstUsers[index]["age"],
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ],
-                                      ),
-                                      Text(
-                                        lstUsers[index]["profession"],
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontStyle: FontStyle.italic,
-                                          fontSize: 18,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                // Align(
-                                //   alignment: Alignment.centerRight,
-                                //   child: Container(
-                                //     decoration: BoxDecoration(
-                                //       color: Colors.white.withOpacity(0.7),
-                                //       borderRadius: const BorderRadius.only(
-                                //         topLeft: Radius.circular(15),
-                                //         bottomLeft: Radius.circular(15),
-                                //       ),
-                                //     ),
-                                //     //color: Colors.black.withOpacity(0.6),
-                                //     height: screenHeight * 0.08,
-                                //     width: screenWidth * 0.65,
-                                //     //child: Center(
-                                //     child: Row(
-                                //       children: [
-                                //         Expanded(
-                                //           child: Column(
-                                //             mainAxisAlignment:
-                                //                 MainAxisAlignment.center,
-                                //             children: [
-                                //               // Expanded(
-                                //               Text(
-                                //                 lstUsers[index]["name"],
-                                //                 style: const TextStyle(
-                                //                   color: Colors.black,
-                                //                   fontSize: 24,
-                                //                 ),
-                                //                 textAlign: TextAlign.center,
-                                //               ),
-                                //               // ),
-                                //               //Expanded(
-                                //               Text(
-                                //                 lstUsers[index]["profession"],
-                                //                 style: const TextStyle(
-                                //                   color: Colors.black,
-                                //                   fontStyle: FontStyle.italic,
-                                //                   fontSize: 20,
-                                //                 ),
-                                //                 textAlign: TextAlign.center,
-                                //               ),
-                                //               // ),
-                                //             ],
-                                //           ),
-                                //         ),
-                                //         Padding(
-                                //           padding: const EdgeInsets.symmetric(
-                                //               horizontal: 10, vertical: 0),
-                                //           child: Text(
-                                //             lstUsers[index]["age"],
-                                //             style: const TextStyle(
-                                //               color: Colors.black,
-                                //               fontSize: 24,
-                                //             ),
-                                //             textAlign: TextAlign.center,
-                                //           ),
-                                //         ),
-                                //       ],
-                                //     ),
-                                //     //),
-                                //   ),
-                                // ),
-
-                                const Divider(),
-                                //SWIPE BUTTONS
-                                Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      FloatingActionButton(
-                                        child: const Icon(
-                                          Icons.close_outlined,
-                                          color: Colors.black,
-                                          size: 32,
-                                        ),
-                                        backgroundColor: Colors.white,
-                                        onPressed: () {
-                                          setState(() {
-                                            cardController.triggerLeft();
-                                          });
-                                        },
-                                      ),
-                                      const SizedBox(
-                                        width: 25,
-                                      ),
-                                      FloatingActionButton(
-                                        child: const Icon(
-                                          Icons.favorite_border_outlined,
-                                          color: Colors.black,
-                                          size: 32,
-                                        ),
-                                        backgroundColor: Colors.white,
-                                        onPressed: () {
-                                          setState(() {
-                                            cardController.triggerRight();
-                                          });
-                                        },
-                                      ),
-                                    ]),
-                                const Divider(),
-                              ],
-                            ),
-                            //),
-                          ),
-                          // ),
-                        ],
-                      ),
-                    ),
+                    child: getUserCard(index),
                   ),
                   cardController: cardController,
                   swipeUpdateCallback:
@@ -313,57 +158,197 @@ class _TinderCardsState extends State<TinderCards>
                   swipeCompleteCallback:
                       (CardSwipeOrientation orientation, int index) {
                     /// Get orientation & index of swiped card!
-
                     //if (index == (lstUsers.length - 1)) {
 
                     //}
                   },
                 ),
-                //   ],
-                // ),
               ),
             ),
             Divider(),
-            // Container(
-            //   child: (lstUsersLength > 0)
-            //       ? Row(
-            //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //           children: [
-            //               FloatingActionButton(
-            //                 // isExtended: true,
-            //                 child: Icon(Icons.undo),
-            //                 backgroundColor: Colors.black,
-            //                 onPressed: () {
-            //                   setState(() {
-            //                     //i++;
-            //                   });
-            //                 },
-            //               ),
-            //               FloatingActionButton(
-            //                 // isExtended: true,
-            //                 child: Icon(Icons.thumb_down_alt_outlined),
-            //                 backgroundColor: Colors.black,
-            //                 onPressed: () {
-            //                   setState(() {
-            //                     //i++;
-            //                   });
-            //                 },
-            //               ),
-            //               FloatingActionButton(
-            //                 // isExtended: true,
-            //                 child: Icon(Icons.thumb_up_alt_outlined),
-            //                 backgroundColor: Colors.black,
-            //                 onPressed: () {
-            //                   setState(() {
-            //                     //i++;
-            //                   });
-            //                 },
-            //               ),
-            //             ])
-            //       : null,
-            // )
           ],
         ),
+      ),
+    );
+  }
+
+  ClipRRect getUserCard(int index) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    lstUserImages = lstUsers[index]["imageUrl"];
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(25),
+      child: Stack(
+        children: [
+          //IMAGEs
+          Container(
+            width: screenWidth,
+            height: screenHeight,
+            child: PageView(
+              //physics: ClampingScrollPhysics(),
+              controller: _pageController,
+              children: [
+                for (var image in lstUserImages)
+                  // Container(
+                  //   child:
+                  Image.asset(
+                    image,
+                    fit: BoxFit.cover,
+                  ),
+                //),
+              ],
+              onPageChanged: (page) {
+                setState(() {
+                  _activeImageIndex = page;
+                });
+              }, //_setActiveImageIndex(),
+              scrollDirection: Axis.vertical,
+            ),
+          ),
+          //IMAGE
+          // Container(
+          //   width: screenWidth,
+          //   height: screenHeight,
+          //   child: _getImages(index),
+          //   // decoration: BoxDecoration(
+          //   //   image: DecorationImage(
+          //   //       image: AssetImage(lstUsers[index]["imageUrl"][0]),
+          //   //       fit: BoxFit.cover),
+          // ),
+// Indicator
+          //NAME, AGE And PROFESSION
+
+          //PAGEVIEW INDICATOR
+          Padding(
+            padding: const EdgeInsets.only(top: 20, left: 20),
+            child: RotatedBox(
+              quarterTurns: 3,
+              child: AnimatedSmoothIndicator(
+                activeIndex: _activeImageIndex,
+                count: lstUserImages.length,
+                effect: CustomizableEffect(
+                  activeDotDecoration: DotDecoration(
+                    width: 30,
+                    height: 10,
+                    color: Colors.white,
+                    //rotationAngle: 180,
+                    //verticalOffset: 10,
+                    borderRadius: BorderRadius.circular(10),
+                    // dotBorder: DotBorder(
+                    //   padding: 2,
+                    //   width: 2,
+                    //   color: Colors.indigo,
+                    // ),
+                  ),
+                  dotDecoration: DotDecoration(
+                    width: 32,
+                    height: 12,
+                    color: Colors.black,
+                    // dotBorder: DotBorder(
+                    //   padding: 2,
+                    //   width: 2,
+                    //   color: Colors.grey,
+                    // ),
+                    // borderRadius: BorderRadius.only(
+                    //     topLeft: Radius.circular(2),
+                    //     topRight: Radius.circular(16),
+                    //     bottomLeft: Radius.circular(16),
+                    //     bottomRight: Radius.circular(2)),
+                    borderRadius: BorderRadius.circular(16),
+                    //verticalOffset: 10,
+                  ),
+                  spacing: 10,
+                ),
+              ),
+            ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                //alignment: Alignment.center,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  //borderRadius: BorderRadius.circular(15),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    //NAME, AGE
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          lstUsers[index]["name"] + ", ",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          lstUsers[index]["age"],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                    //PROFESSION
+                    Text(
+                      lstUsers[index]["profession"],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 18,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(),
+              //SWIPE BUTTONS
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                FloatingActionButton(
+                  child: const Icon(
+                    Icons.close_outlined,
+                    color: Colors.black,
+                    size: 32,
+                  ),
+                  backgroundColor: Colors.white,
+                  onPressed: () {
+                    setState(() {
+                      cardController.triggerLeft();
+                    });
+                  },
+                ),
+                const SizedBox(
+                  width: 25,
+                ),
+                FloatingActionButton(
+                  child: const Icon(
+                    Icons.favorite_border_outlined,
+                    color: Colors.black,
+                    size: 32,
+                  ),
+                  backgroundColor: Colors.white,
+                  onPressed: () {
+                    setState(() {
+                      cardController.triggerRight();
+                    });
+                  },
+                ),
+              ]),
+              const Divider(),
+            ],
+          ),
+        ],
       ),
     );
   }
