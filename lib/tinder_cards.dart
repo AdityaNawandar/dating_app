@@ -74,7 +74,7 @@ class _TinderCardsState extends State<TinderCards>
       unselectedItemColor: kBottomNavBarUnselectedItemColor,
       currentIndex: _selectedIndex,
       selectedLabelStyle: const TextStyle(
-        fontSize: 18,
+        fontSize: kBottomNavBarItemFontSize,
       ),
       iconSize: 32.0,
       items: const [
@@ -149,7 +149,7 @@ class _TinderCardsState extends State<TinderCards>
                         ),
                       ],
                     ),
-                    //COMPLETE CARD
+                    //USER CARD
                     child: getUserCard(index),
                   ),
                   cardController: cardController,
@@ -336,7 +336,7 @@ class _TinderCardsState extends State<TinderCards>
                           lstUsers[index]["name"] + ", ",
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 24,
+                            fontSize: kUserNameFontSize,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -344,7 +344,7 @@ class _TinderCardsState extends State<TinderCards>
                           lstUsers[index]["age"],
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: kUserAgeFontSize,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -356,7 +356,7 @@ class _TinderCardsState extends State<TinderCards>
                       style: const TextStyle(
                         color: Colors.white,
                         fontStyle: FontStyle.italic,
-                        fontSize: 18,
+                        fontSize: kUserProfessionFontSize,
                       ),
                       textAlign: TextAlign.center,
                     ),
