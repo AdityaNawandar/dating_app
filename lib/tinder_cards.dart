@@ -10,7 +10,7 @@ import 'data.dart';
 
 class TinderCards extends StatefulWidget {
   const TinderCards({Key? key}) : super(key: key);
-
+  static const routeName = '/tinder_cards';
   @override
   _TinderCardsState createState() => _TinderCardsState();
 }
@@ -22,15 +22,17 @@ class _TinderCardsState extends State<TinderCards>
   int _selectedIndex = 0;
   List lstUserImages = [];
   CardController cardController = CardController();
-  var _pageController = PageController();
+  PageController _pageController = PageController();
   int _activeImageIndex = 0;
-
+  bool isCardChanged = false;
+  //int _currentCardIndex = 0;
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = new PageController(initialPage: 0);
     _pageController.addListener(() {
       setState(() {
+        //_pageController.page!.toInt() = isCardChanged ? 0 : _pageController.page!.toInt();
         _activeImageIndex = _pageController.page!.toInt();
       });
     });
@@ -38,6 +40,12 @@ class _TinderCardsState extends State<TinderCards>
       lstUsers = users;
       lstUsersLength = users.length;
     });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   //METHOD TO SET STATE - BottomNavBar
@@ -108,19 +116,19 @@ class _TinderCardsState extends State<TinderCards>
 
   SizedBox getBody() {
     double screenHeight = MediaQuery.of(context).size.height;
-
+    var topMargin = screenHeight * 0.08;
     return SizedBox(
       height: screenHeight,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 60, top: 30),
+        padding: EdgeInsets.only(bottom: 60, top: topMargin),
         child: Column(
           children: [
             Flexible(
               child: Container(
                 height: screenHeight,
                 child: TinderSwapCard(
-                  animDuration: 200,
-                  swipeEdge: 8,
+                  animDuration: 100,
+                  swipeEdge: 6,
                   //swipeEdgeVertical: 2,
                   orientation: AmassOrientation.TOP,
                   swipeUp: false,
@@ -128,7 +136,7 @@ class _TinderCardsState extends State<TinderCards>
                   totalNum: lstUsersLength,
                   maxWidth: MediaQuery.of(context).size.width,
                   maxHeight: MediaQuery.of(context).size.height * 0.81,
-                  minWidth: MediaQuery.of(context).size.width * 0.8,
+                  minWidth: MediaQuery.of(context).size.width * 0.7,
                   minHeight: MediaQuery.of(context).size.height * 0.8,
                   cardBuilder: (context, index) => Container(
                     decoration: BoxDecoration(
@@ -149,23 +157,29 @@ class _TinderCardsState extends State<TinderCards>
                       (DragUpdateDetails details, Alignment align) {
                     /// Get swiping card's alignment
                     if (align.x < 0) {
-                      print('LEFT');
+                      //print('LEFT');
                     } else if (align.x > 0) {
-                      print('RIGHT');
+                      //print('RIGHT');
                     }
-                    // print(itemsTemp.length);
+                    // print(details.delta);
+                    // print(lstUsersLength);
                   },
                   swipeCompleteCallback:
                       (CardSwipeOrientation orientation, int index) {
                     /// Get orientation & index of swiped card!
-                    //if (index == (lstUsers.length - 1)) {
-
-                    //}
+                    //print(orientation);
+                    setState(() {
+                      if (orientation == CardSwipeOrientation.RIGHT ||
+                          orientation == CardSwipeOrientation.LEFT) {
+                        _pageController.jumpToPage(0);
+                        //print(orientation);
+                      }
+                    });
                   },
                 ),
               ),
             ),
-            Divider(),
+            const Divider(),
           ],
         ),
       ),
@@ -176,7 +190,8 @@ class _TinderCardsState extends State<TinderCards>
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     lstUserImages = lstUsers[index]["imageUrl"];
-
+    _pageController =
+        PageController(initialPage: 0, keepPage: true, viewportFraction: 1);
     return ClipRRect(
       borderRadius: BorderRadius.circular(25),
       child: Stack(
@@ -185,24 +200,59 @@ class _TinderCardsState extends State<TinderCards>
           Container(
             width: screenWidth,
             height: screenHeight,
+            // child: PageView.builder(
+            //     scrollDirection: Axis.vertical,
+            //     controller: _pageController = PageController(initialPage: 0),
+            //     itemCount: lstUserImages.length,
+            //     onPageChanged: (page) {
+            //       setState(() {
+            //         //page = isCardChanged ? 0 : page;
+            //         _activeImageIndex = page;
+            //       });
+            //     },
+            //     itemBuilder: (context, index) {
+            //       //if (lstUserImages.length < _activeImageIndex) {
+            //       return
+            //           //GestureDetector(
+            //           // onTap: () {
+            //           //   _pageController.jumpToPage(index); // for regular jump
+            //           //   // _pageController.animateToPage(_position, curve: Curves.decelerate, duration: Duration(milliseconds: 300)); // for animated jump. Requires a curve and a duration
+            //           // },
+            //           //child:
+            //           Container(
+            //         width: screenWidth,
+            //         height: screenHeight,
+            //         child: Image.asset(
+            //           lstUserImages[index],
+            //           fit: BoxFit.cover,
+            //         ),
+            //       );
+            //       // );
+            //       //}
+            //       // else {
+            //       //   return Container();
+            //       // }
+            //     }),
             child: PageView(
               //physics: ClampingScrollPhysics(),
-              controller: _pageController,
+              controller: _pageController = PageController(
+                  initialPage: 0, keepPage: false, viewportFraction: 1),
               children: [
+                // Image.asset(
+                //   lstUserImages[index],
+                //   fit: BoxFit.cover,
+                // ),
                 for (var image in lstUserImages)
-                  // Container(
-                  //   child:
                   Image.asset(
                     image,
                     fit: BoxFit.cover,
                   ),
-                //),
               ],
               onPageChanged: (page) {
                 setState(() {
                   _activeImageIndex = page;
                 });
-              }, //_setActiveImageIndex(),
+              },
               scrollDirection: Axis.vertical,
             ),
           ),
@@ -230,7 +280,7 @@ class _TinderCardsState extends State<TinderCards>
                 effect: CustomizableEffect(
                   activeDotDecoration: DotDecoration(
                     width: 30,
-                    height: 10,
+                    height: 6,
                     color: Colors.white,
                     //rotationAngle: 180,
                     //verticalOffset: 10,
@@ -243,7 +293,7 @@ class _TinderCardsState extends State<TinderCards>
                   ),
                   dotDecoration: DotDecoration(
                     width: 32,
-                    height: 12,
+                    height: 6,
                     color: Colors.black,
                     // dotBorder: DotBorder(
                     //   padding: 2,
@@ -258,11 +308,13 @@ class _TinderCardsState extends State<TinderCards>
                     borderRadius: BorderRadius.circular(16),
                     //verticalOffset: 10,
                   ),
-                  spacing: 10,
+                  spacing: 0,
                 ),
               ),
             ),
           ),
+
+          //NAME, AGE, PROFESSION OVERLAY
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
